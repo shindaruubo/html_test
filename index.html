@@ -16,7 +16,10 @@ var resolution = { w: 640, h: 640 };
 var video = null;
 var media = null;
 var canvas = null;
+var canvas2 = null;
 var ctx = null;
+var ctx2 = null;
+var num = 0;
 $(function(){
     //. video
     video = document.createElement( 'video' );
@@ -53,8 +56,18 @@ $(function(){
     canvas.height = canvasSize.h;
     document.getElementById( 'canvasPreview' ).appendChild( canvas );
 
+    //. canvas2
+    canvas2 = document.createElement( 'canvas' );
+    canvas2.id = 'canvas2';
+    canvas2.width = canvasSize.w;
+    canvas2.height = canvasSize.h;
+    document.getElementById( 'canvasPreview2' ).appendChild( canvas2 );
+
     //. context
     ctx = canvas.getContext( '2d' );
+
+    //. context2
+    ctx2 = canvas2.getContext( '2d' );
 
     //. render video stream into canvas
     _canvasUpdate();
@@ -64,6 +77,10 @@ $(function(){
 function _canvasUpdate(){
     //. video to canvas(animation)
     ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
+
+    //. video to canvas(animation)
+    num = num + 1;
+    ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
 
     //. check QR code
     /* ここでQRコード読み取りしてるらしい。一旦消す
@@ -116,7 +133,9 @@ function isMobile(){
         <h4>Canvas Preview</h4>
     </div>
 
-
+    <div class="container" id="canvasPreview2" style="text-align: center; display: none;">
+        <h4>Canvas Preview2</h4>
+    </div>
 
 </body>
 </html>
