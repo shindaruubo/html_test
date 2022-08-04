@@ -65,7 +65,7 @@ function _canvasUpdate(){
     ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
     //. check QR code
-    <!--
+    /* ここでQRコード読み取りしてるらしい。一旦消す
     var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
     var result = jsQR( img.data, img.width, img.height );
     if( result && result.data ){ 
@@ -75,7 +75,7 @@ function _canvasUpdate(){
     }else{
         requestAnimationFrame( _canvasUpdate );
     }
-    -->
+    */
     requestAnimationFrame( _canvasUpdate );
 };
 
