@@ -76,12 +76,15 @@ $(function(){
 //. render video stream into canvas
 function _canvasUpdate(){
     num = num + 1;
-    if( num % 10 == 0){
-        //. video to canvas(animation)
-        ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
-        //. video to canvas(animation)
+    //. video to canvas(animation)
+    ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
+
+    if( num % 10 == 0){
+        //. video to canvas2(animation)
         ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
+        
+        // ここで10フレームに1回(?)画像保存とアップロード処理入れる
     }
 
     //. check QR code
@@ -126,15 +129,17 @@ function isMobile(){
     </div>
     -->
     <!-- video(visible) -->
+    <!-- ここは取り込んだvideoをそのまま表示してるっぽい -->
     <div class="container" id="videoPreview" style="text-align: center;">
         <h4>Video Preview</h4>
     </div>
 
-    <!-- canvas(invisible) -->
-    <div class="container" id="canvasPreview" style="text-align: center; display: none;">
+    <!-- canvas(1/1) -->
+    <div class="container" id="canvasPreview" style="text-align: center;">
         <h4>Canvas Preview</h4>
     </div>
 
+    <!-- canvas(1/10) -->
     <div class="container" id="canvasPreview2" style="text-align: center;">
         <h4>Canvas Preview2</h4>
     </div>
