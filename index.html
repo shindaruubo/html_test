@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <head>
 
-<!-- ƒXƒ}ƒz‚ÅŒ©‚â‚·‚­‚·‚éİ’è -->
+<meta charset="UTF-8">
+
+<!-- ã‚¹ãƒãƒ›ã§è¦‹ã‚„ã™ãã™ã‚‹è¨­å®š -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- ƒuƒ‰ƒEƒU‚Ìƒ^ƒu‚É•\¦‚³‚ê‚éƒ^ƒCƒgƒ‹ -->
-<title>ƒeƒ“ƒvƒŒ[ƒg</title>
+<!-- ãƒ–ãƒ©ã‚¦ã‚¶ã®ã‚¿ãƒ–ã«è¡¨ç¤ºã•ã‚Œã‚‹ã‚¿ã‚¤ãƒˆãƒ« -->
+<title>ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆ</title>
 
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 
@@ -68,7 +70,7 @@
         var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
         var result = jsQR( img.data, img.width, img.height );
         if( result && result.data ){ 
-            //. À•W‚Íi<video> ‚Å‚Í‚È‚­j <canvas> “à‚Ì‚à‚Ì
+            //. åº§æ¨™ã¯ï¼ˆ<video> ã§ã¯ãªãï¼‰ <canvas> å†…ã®ã‚‚ã®
             //. result.location = { bottomLeftCorner: { x: 226.021, y: 223.73 }, topRightCorder: { x: 284.70, y: 189.28 }, .. };
             alert( result.data ); 
         }else{
@@ -91,9 +93,9 @@
 </head>
  
 <body>
-    <h1>ƒeƒ“ƒvƒŒ[ƒg</h1>
+    <h1>ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆ</h1>
     <div id="app">
-        <label for="upload">Ê^‚ğB‰e‚µ‚ÄƒAƒbƒvƒ[ƒh‚·‚é</label>
+        <label for="upload">å†™çœŸã‚’æ’®å½±ã—ã¦ã‚¢ãƒƒãƒ—ãƒ­ãƒ¼ãƒ‰ã™ã‚‹</label>
         <input id="upload" type="file" name="image" accept="image/*" capture="camera"/>
     </div>
     
