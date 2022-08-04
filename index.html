@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<head>
+
+<!-- スマホで見やすくする設定 -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- ブラウザのタブに表示されるタイトル -->
+<title>テンプレート</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+<script>
+    var cameraSize = { w: 360, h: 240 };
+    var canvasSize = { w: 360, h: 240 };
+    var resolution = { w: 1080, h: 720 };
+    var video = null;
+    var media = null;
+    var canvas = null;
+    var ctx = null;
+    $(function(){
+        //. video
+        video = document.createElement( 'video' );
+        video.id = 'video';
+        video.width = cameraSize.w;
+        video.height = cameraSize.h;
+        video.setAttribute( 'autoplay', true );  //. #1
+        video.setAttribute( 'muted', '' );       //. #1
+        video.setAttribute( 'playsinline', '' ); //. #1
+        document.getElementById( 'videoPreview' ).appendChild( video );
+    
+        //. media
+        var data = {
+            audio: false,   //. no voice/mic
+            video: {
+                facingMode: 'user',  //. front
+                width: { ideal: resolution.w },
+                height: { ideal: resolution.h }
+            }
+        };
+        if( isMobile() ){
+            data.video.facingMode = 'environment'; //. back
+        }
+        media = navigator.mediaDevices.getUserMedia( data ).then( function( stream ){
+            video.srcObject = stream;
+        }).then( function( err ){
+            // do nothing
+        });
+    
+        //. canvas
+        canvas = document.createElement( 'canvas' );
+        canvas.id = 'canvas';
+        canvas.width = canvasSize.w;
+        canvas.height = canvasSize.h;
+        document.getElementById( 'canvasPreview' ).appendChild( canvas );
+    
+        //. context
+        ctx = canvas.getContext( '2d' );
+    
+        //. render video stream into canvas
+        _canvasUpdate();
+    });
+    
+    //. render video stream into canvas
+    function _canvasUpdate(){
+        //. video to canvas(animation)
+        ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
+    
+        //. check QR code
+        var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
+        var result = jsQR( img.data, img.width, img.height );
+        if( result && result.data ){ 
+            //. 座標は（<video> ではなく） <canvas> 内のもの
+            //. result.location = { bottomLeftCorner: { x: 226.021, y: 223.73 }, topRightCorder: { x: 284.70, y: 189.28 }, .. };
+            alert( result.data ); 
+        }else{
+            requestAnimationFrame( _canvasUpdate );
+        }
+    };
+    
+    function isMobile(){
+        var b = false;
+        var ua = navigator.userAgent;
+        if( ( ua.indexOf('iPhone') > 0 || ua.indexOf('Android') > 0 ) && ua.indexOf( 'Mobile' ) > 0 ){
+            b = true;
+        }
+    
+        return b;
+    }
+</script>
+
+
+</head>
+ 
+<body>
+    <h1>テンプレート</h1>
+    <div id="app">
+        <label for="upload">写真を撮影してアップロードする</label>
+        <input id="upload" type="file" name="image" accept="image/*" capture="camera"/>
+    </div>
+    
+    <!-- video(visible) -->
+    <div class="container" id="videoPreview" style="text-align: center;">
+        <h4>Video Preview</h4>
+    </div>
+
+    <!-- canvas(invisible) -->
+    <div class="container" id="canvasPreview" style="text-align: center; display: none;">
+        <h4>Canvas Preview</h4>
+    </div>
+
+    <style>
+        body{
+          background-color: rgb(131, 211, 155);
+        }
+    </style>
+
+</body>
+</html>
