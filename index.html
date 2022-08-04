@@ -75,12 +75,14 @@ $(function(){
 
 //. render video stream into canvas
 function _canvasUpdate(){
-    //. video to canvas(animation)
-    ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
-
-    //. video to canvas(animation)
     num = num + 1;
-    ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
+    if( num % 10 == 0){
+        //. video to canvas(animation)
+        ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
+
+        //. video to canvas(animation)
+        ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
+    }
 
     //. check QR code
     /* ここでQRコード読み取りしてるらしい。一旦消す
@@ -133,7 +135,7 @@ function isMobile(){
         <h4>Canvas Preview</h4>
     </div>
 
-    <div class="container" id="canvasPreview2" style="text-align: center; display: none;">
+    <div class="container" id="canvasPreview2" style="text-align: center;">
         <h4>Canvas Preview2</h4>
     </div>
 
