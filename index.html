@@ -3,7 +3,8 @@
 
 <meta charset="UTF-8">
 <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="https://apis.google.com/js/api.js"></script>
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 <!-- スマホで見やすくする設定 -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,132 +12,210 @@
 <title>テンプレート</title>
 
 <script>
-var cameraSize = { w: 320, h: 320 };
-var canvasSize = { w: 320, h: 320 };
-var resolution = { w: 320, h: 320 };
-var video = null;
-var media = null;
-var canvas = null;
-var canvas2 = null;
-var ctx = null;
-var ctx2 = null;
-var num = 0;
-$(function(){
-    //. video
-    video = document.createElement( 'video' );
-    video.id = 'video';
-    video.width = cameraSize.w;
-    video.height = cameraSize.h;
-    video.setAttribute( 'autoplay', true );  //. #1
-    video.setAttribute( 'muted', '' );       //. #1
-    video.setAttribute( 'playsinline', '' ); //. #1
-    document.getElementById( 'videoPreview' ).appendChild( video );
+    var cameraSize = { w: 320, h: 320 };
+    var canvasSize = { w: 320, h: 320 };
+    var resolution = { w: 320, h: 320 };
+    var video = null;
+    var media = null;
+    var canvas = null;
+    var canvas2 = null;
+    var ctx = null;
+    var ctx2 = null;
+    var num = 0;
 
-    //. media
-    var data = {
-        audio: false,   //. no voice/mic
-        video: {
-            facingMode: 'user',  //. front
-            width: { ideal: resolution.w },
-            height: { ideal: resolution.h }
-        }
-    };
-    if( isMobile() ){
-        data.video.facingMode = 'environment'; //. back
+    // google系
+    const CLIENT_ID = '<YOUR_CLIENT_ID>';
+    const API_KEY = '<YOUR_API_KEY>';
+    const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+    let tokenClient;
+    let gapiInited = false;
+    let gisInited = false;        
+    document.getElementById('authorize_button').style.visibility = 'hidden';
+    document.getElementById('signout_button').style.visibility = 'hidden';
+    
+    function gapiLoaded() {
+        gapi.load('client', initializeGapiClient);
     }
-    media = navigator.mediaDevices.getUserMedia( data ).then( function( stream ){
-        video.srcObject = stream;
-    }).then( function( err ){
-        // do nothing
+       
+    async function initializeGapiClient() {
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        maybeEnableButtons();  
+    }
+    
+    function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: '', // defined later
+        });
+        gisInited = true;
+        maybeEnableButtons();
+    }
+    
+    function maybeEnableButtons() {
+        if (gapiInited && gisInited) {
+            document.getElementById('authorize_button').style.visibility = 'visible';
+        }
+    }
+    
+    function handleAuthClick() {
+        tokenClient.callback = async (resp) => {
+            if (resp.error !== undefined) {
+                throw (resp);
+            }
+            document.getElementById('signout_button').style.visibility = 'visible';
+            document.getElementById('authorize_button').innerText = 'Refresh';
+            await listFiles();
+        };
+
+        if (gapi.client.getToken() === null) {
+            // Prompt the user to select a Google Account and ask for consent to share their data
+            // when establishing a new session.
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        } else {
+            // Skip display of account chooser and consent dialog for an existing session.
+            tokenClient.requestAccessToken({prompt: ''});
+        }
+    }
+    
+    function handleSignoutClick() {
+        const token = gapi.client.getToken();
+        if (token !== null) {
+            google.accounts.oauth2.revoke(token.access_token);
+            gapi.client.setToken('');
+            document.getElementById('content').innerText = '';
+            document.getElementById('authorize_button').innerText = 'Authorize';
+            document.getElementById('signout_button').style.visibility = 'hidden';
+        }
+    }    
+    
+    $(function(){
+        //. video
+        video = document.createElement( 'video' );
+        video.id = 'video';
+        video.width = cameraSize.w;
+        video.height = cameraSize.h;
+        video.setAttribute( 'autoplay', true );  //. #1
+        video.setAttribute( 'muted', '' );       //. #1
+        video.setAttribute( 'playsinline', '' ); //. #1
+        document.getElementById( 'videoPreview' ).appendChild( video );
+
+
+        
+
+        
+        //. media
+        var data = {
+            audio: false,   //. no voice/mic
+            video: {
+                facingMode: 'user',  //. front
+                width: { ideal: resolution.w },
+                height: { ideal: resolution.h }
+            }
+        };
+        
+        if( isMobile() ){
+            data.video.facingMode = 'environment'; //. back
+        }
+        media = navigator.mediaDevices.getUserMedia( data ).then( function( stream ){
+            video.srcObject = stream;
+        }).then( function( err ){
+            // do nothing
+        });
+
+        //. canvas
+        canvas = document.createElement( 'canvas' );
+        canvas.id = 'canvas';
+        canvas.width = canvasSize.w;
+        canvas.height = canvasSize.h;
+        document.getElementById( 'canvasPreview' ).appendChild( canvas );
+
+        //. canvas2
+        canvas2 = document.createElement( 'canvas' );
+        canvas2.id = 'canvas2';
+        canvas2.width = canvasSize.w;
+        canvas2.height = canvasSize.h;
+        document.getElementById( 'canvasPreview2' ).appendChild( canvas2 );
+
+        //. context
+        ctx = canvas.getContext( '2d' );
+
+        //. context2
+        ctx2 = canvas2.getContext( '2d' );
+
+        //. render video stream into canvas
+        _canvasUpdate();
     });
 
-    //. canvas
-    canvas = document.createElement( 'canvas' );
-    canvas.id = 'canvas';
-    canvas.width = canvasSize.w;
-    canvas.height = canvasSize.h;
-    document.getElementById( 'canvasPreview' ).appendChild( canvas );
-
-    //. canvas2
-    canvas2 = document.createElement( 'canvas' );
-    canvas2.id = 'canvas2';
-    canvas2.width = canvasSize.w;
-    canvas2.height = canvasSize.h;
-    document.getElementById( 'canvasPreview2' ).appendChild( canvas2 );
-
-    //. context
-    ctx = canvas.getContext( '2d' );
-
-    //. context2
-    ctx2 = canvas2.getContext( '2d' );
-
     //. render video stream into canvas
-    _canvasUpdate();
-});
+    function _canvasUpdate(){
 
-//. render video stream into canvas
-function _canvasUpdate(){
-    num = num + 1;
+        //. video to canvas(animation)
+        // canvasの更新処理 毎フレーム実施してる
+        ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
-    //. video to canvas(animation)
-    // canvasの更新処理 毎フレーム実施してる
-    ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
-
-    if( num % 900 == 0){
-        // ここでnフレームに1回だけ動く処理画像保存
-        // canvas2の更新処理
-        ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
+        if( num % 900 == 0){
+            // ここでnフレームに1回だけ動く処理画像保存
+            // canvas2の更新処理
+            ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
         
-        // ここ画像保存とアップロード処理入れる
-        canvas2.toBlob(function(blob){
-            var url = window.URL.createObjectURL(blob);
+            // ここ画像保存とアップロード処理入れる
+            canvas2.toBlob(function(blob){
+                var url = window.URL.createObjectURL(blob);
 
-            // お試し ローカルにダウンロードさせる処理
-            var $a = $('<a>').attr('href', url).attr('download', 'canvas.png');
-            $a.get(0).click();
-            $a.remove();
+                // お試し ローカルにダウンロードさせる処理
+                var $a = $('<a>').attr('href', url).attr('download', 'canvas.png');
+                $a.get(0).click();
+                $a.remove();
 
-            xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media');
-            xhr.setRequestHeader('content-type', 'image/jpeg');
-            xhr.setRequestHeader('uploadType', 'media');
-            // フォームに入力した値をリクエストとして設定
-            var request = url;
-            xhr.send(request);
+                xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media');
+                xhr.setRequestHeader('content-type', 'image/jpeg');
+                xhr.setRequestHeader('uploadType', 'media');
+                // フォームに入力した値をリクエストとして設定
+                var request = url;
+                xhr.send(request);
             
-            // 応答が帰ってきたら動く
-            xhr.onreadystatechange = function() {
-                if(xhr.readyState === 4) {
-                    console.log( xhr.responseText );
+                // 応答が帰ってきたら動く
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === 4) {
+                        console.log( xhr.responseText );
+                    }
                 }
-            }
             
-        },"image/jpeg", 1);
-    }
+            },"image/jpeg", 1);
+        }
 
-    //. check QR code
-    /* ここでQRコード読み取りしてるらしい。一旦消す
-    var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
-    var result = jsQR( img.data, img.width, img.height );
-    if( result && result.data ){ 
-        //. 座標は（<video> ではなく） <canvas> 内のもの
-        //. result.location = { bottomLeftCorner: { x: 226.021, y: 223.73 }, topRightCorder: { x: 284.70, y: 189.28 }, .. };
-        alert( result.data ); 
-    }else{
+        //. check QR code
+        /* ここでQRコード読み取りしてるらしい。一旦消す
+        var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
+        var result = jsQR( img.data, img.width, img.height );
+        if( result && result.data ){ 
+            //. 座標は（<video> ではなく） <canvas> 内のもの
+            //. result.location = { bottomLeftCorner: { x: 226.021, y: 223.73 }, topRightCorder: { x: 284.70, y: 189.28 }, .. };
+            alert( result.data ); 
+        }else{
+            requestAnimationFrame( _canvasUpdate );
+        }
+        */
         requestAnimationFrame( _canvasUpdate );
-    }
-    */
-    requestAnimationFrame( _canvasUpdate );
-};
+    
+        num = num + 1;
+    };
 
-function isMobile(){
-    var b = false;
-    var ua = navigator.userAgent;
-    if( ( ua.indexOf('iPhone') > 0 || ua.indexOf('Android') > 0 ) && ua.indexOf( 'Mobile' ) > 0 ){
-        b = true;
-    }
+    function isMobile(){
+        var b = false;
+        var ua = navigator.userAgent;
+        if( ( ua.indexOf('iPhone') > 0 || ua.indexOf('Android') > 0 ) && ua.indexOf( 'Mobile' ) > 0 ){
+            b = true;
+        }
 
-    return b;
-}
+        return b;
+    }
 </script>
 <style>
     body{
@@ -148,15 +227,18 @@ function isMobile(){
  
 <body>
     <h1>テンプレート</h1>
-    <!--
+    
     <div id="app">
         <label for="upload">写真を撮影してアップロードする</label>
         <input id="upload" type="file" name="image" accept="image/*" capture="camera"/>
     </div>
-    -->
+    
+    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
+    
     <!-- video(visible) -->
     <!-- ここは取り込んだvideoをそのまま表示してるっぽい -->
-    <div class="container" id="videoPreview" style="text-align: center;">
+    <div class="container" id="videoPreview" style="text-align: center; display: none;">
         <h4>Video Preview</h4>
     </div>
 
