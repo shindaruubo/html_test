@@ -2,7 +2,8 @@
 <head>
 
 <meta charset="UTF-8">
-<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
 
 <!-- スマホで見やすくする設定 -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -81,7 +82,7 @@ function _canvasUpdate(){
     // canvasの更新処理 毎フレーム実施してる
     ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
-    if( num % 300 == 0){
+    if( num % 900 == 0){
         // ここでnフレームに1回だけ動く処理画像保存
         // canvas2の更新処理
         ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
@@ -89,10 +90,27 @@ function _canvasUpdate(){
         // ここ画像保存とアップロード処理入れる
         canvas2.toBlob(function(blob){
             var url = window.URL.createObjectURL(blob);
+
+            // お試し ローカルにダウンロードさせる処理
             var $a = $('<a>').attr('href', url).attr('download', 'canvas.png');
             $a.get(0).click();
             $a.remove();
-        },"image/jpeg", 0.95);
+
+            xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media');
+            xhr.setRequestHeader('content-type', 'image/jpeg');
+            xhr.setRequestHeader('uploadType', 'media');
+            // フォームに入力した値をリクエストとして設定
+            var request = url;
+            xhr.send(request);
+            
+            // 応答が帰ってきたら動く
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState === 4) {
+                    console.log( xhr.responseText );
+                }
+            }
+            
+        },"image/jpeg", 1);
     }
 
     //. check QR code
