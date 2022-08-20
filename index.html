@@ -81,7 +81,7 @@ function _canvasUpdate(){
     // canvasの更新処理 毎フレーム実施してる
     ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
-    if( num % 50 == 0){
+    if( num % 300 == 0){
         // ここでnフレームに1回だけ動く処理画像保存
         // canvas2の更新処理
         ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
