@@ -10,9 +10,9 @@
 <title>テンプレート</title>
 
 <script>
-var cameraSize = { w: 640, h: 640 };
-var canvasSize = { w: 640, h: 640 };
-var resolution = { w: 640, h: 640 };
+var cameraSize = { w: 320, h: 320 };
+var canvasSize = { w: 320, h: 320 };
+var resolution = { w: 320, h: 320 };
 var video = null;
 var media = null;
 var canvas = null;
@@ -78,13 +78,21 @@ function _canvasUpdate(){
     num = num + 1;
 
     //. video to canvas(animation)
+    // canvasの更新処理 毎フレーム実施してる
     ctx.drawImage( video, 0, 0, canvas.width, canvas.height );
 
-    if( num % 10 == 0){
-        //. video to canvas2(animation)
+    if( num % 50 == 0){
+        // ここでnフレームに1回だけ動く処理画像保存
+        // canvas2の更新処理
         ctx2.drawImage( video, 0, 0, canvas.width, canvas.height );
         
-        // ここで10フレームに1回(?)画像保存とアップロード処理入れる
+        // ここ画像保存とアップロード処理入れる
+        canvas2.toBlob(function(blob){
+            var url = window.URL.createObjectURL(blob);
+            var $a = $('<a>').attr('href', url).attr('download', 'canvas.png');
+            $a.get(0).click();
+            $a.remove();
+        },"image/jpeg", 0.95);
     }
 
     //. check QR code
