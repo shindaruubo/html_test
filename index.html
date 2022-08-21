@@ -148,26 +148,30 @@
         test();
     }    */
     
-      var PROJECT_ID = 'hazel-phoenix-360012';
-      var CLIENT_ID = '552908380445-k81hvak6cqg1f3bfe997sggf5g95v9qf.apps.googleusercontent.com';
-      var API_KEY = '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';
-      var SCOPES = 'https://www.googleapis.com/auth/compute';
-      function authorization() {
-        gapi.client.setApiKey(API_KEY);
-        gapi.auth.authorize({
-          client_id: CLIENT_ID,
-          scope: SCOPES,
-          immediate: false
-        }, function(authResult) {
-      console.log(authResult.access_token);
-          if (authResult && !authResult.error) {
-            $('#ret').text('success');
-          } else {
-            $('#ret').text('error');
-          }
+   
+      function start() {
+        // Initializes the client with the API key and the Translate API.
+        gapi.client.init({
+          'apiKey': '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',
+          'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/translate/v2/rest'],
+        }).then(function() {
+          // Executes an API request, and returns a Promise.
+          // The method name `language.translations.list` comes from the API discovery.
+          return gapi.client.language.translations.list({
+            q: 'hello world',
+            source: 'en',
+            target: 'de',
+          });
+        }).then(function(response) {
+          console.log(response.result.data.translations[0].translatedText);
+        }, function(reason) {
+          console.log('Error: ' + reason.result.error.message);
         });
-      }
-      $(window).load(authorization);
+      };
+
+      // Loads the JavaScript client library and invokes `start` afterwards.
+      gapi.load('client', start);
+    
     </script>
 </script>
 <style>
@@ -207,7 +211,7 @@
 
     -->
     
-    <p id="ret"></p>
+    <div id="results"></div>
     
     
 </body>
