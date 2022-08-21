@@ -166,7 +166,9 @@
     function start() {
         scanflg = 1;
     }
-    
+    function stop() {
+        scanflg = 0;
+    }    
     /*
     function gapiLoaded() {
         gapi.load('client', initializeGapiClient);
@@ -265,10 +267,11 @@
     <div class="container" id="canvasPreview2" style="text-align: center; display: none;">
         <h4>Canvas Preview2</h4>
     </div>
+    
     <div style="text-align: center;">
         <input type="button" value="撮影開始" onclick="start();"/>
-        <input type="button" value=btnmessage onclick="start();"/>
-
+        <input type="button" value="停止" onclick="stop();"/>
     </div>
+    
 </body>
 </html>
