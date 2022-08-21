@@ -23,7 +23,7 @@
     var ctx2 = null;
     var num = 0;
     var scanflg = 0;
-    var btnmessage = "撮影開始";
+    var filename = 0;
     
     // google系
     /*
@@ -110,7 +110,7 @@
                 var url = window.URL.createObjectURL(blob);
 
                 // お試し ローカルにダウンロードさせる処理
-                var $a = $('<a>').attr('href', url).attr('download', 'canvas.png');
+                var $a = $('<a>').attr('href', url).attr('download', 'canvas_' + filename + '.png');
                 $a.get(0).click();
                 $a.remove();
 
@@ -146,6 +146,7 @@
         requestAnimationFrame( _canvasUpdate );
     
         num = num + 1;
+        filename = filename + 1;
     };
 
     function isMobile(){
