@@ -3,8 +3,7 @@
 
 <meta charset="UTF-8">
 <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
 
 <!-- スマホで見やすくする設定 -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -25,18 +24,7 @@
     var scanflg = 0;
     var filename = 0;
     
-    // google系
-    /*
-    const CLIENT_ID = '<YOUR_CLIENT_ID>';
-    const API_KEY = '<YOUR_API_KEY>';
-    const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-    const SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly';
-    let tokenClient;
-    let gapiInited = false;
-    let gisInited = false;        
-    document.getElementById('authorize_button').style.visibility = 'hidden';
-    document.getElementById('signout_button').style.visibility = 'hidden';
-    */
+
     
     $(function(){
         //. video
@@ -133,20 +121,7 @@
             filename = filename + 1;
         }
 
-        //. check QR code
-        /* ここでQRコード読み取りしてるらしい。一旦消す
-        var img = ctx.getImageData( 0, 0, canvas.width, canvas.height );
-        var result = jsQR( img.data, img.width, img.height );
-        if( result && result.data ){ 
-            //. 座標は（<video> ではなく） <canvas> 内のもの
-            //. result.location = { bottomLeftCorner: { x: 226.021, y: 223.73 }, topRightCorder: { x: 284.70, y: 189.28 }, .. };
-            alert( result.data ); 
-        }else{
-            requestAnimationFrame( _canvasUpdate );
-        }
-        */
-        requestAnimationFrame( _canvasUpdate );
-    
+        requestAnimationFrame( _canvasUpdate ); 
         num = num + 1;
     };
 
@@ -170,69 +145,32 @@
     }
     function stop() {
         scanflg = 0;
+        test();
     }    
-    /*
-    function gapiLoaded() {
-        gapi.load('client', initializeGapiClient);
-    }
-       
-    async function initializeGapiClient() {
-        await gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: [DISCOVERY_DOC],
-        });
-        gapiInited = true;
-        maybeEnableButtons();  
-    }
     
-    function gisLoaded() {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: '', // defined later
-        });
-        gisInited = true;
-        maybeEnableButtons();
-    }
-    
-    function maybeEnableButtons() {
-        if (gapiInited && gisInited) {
-            document.getElementById('authorize_button').style.visibility = 'visible';
-        }
-    }
-    
-    function handleAuthClick() {
-        tokenClient.callback = async (resp) => {
-            if (resp.error !== undefined) {
-                throw (resp);
-            }
-            document.getElementById('signout_button').style.visibility = 'visible';
-            document.getElementById('authorize_button').innerText = 'Refresh';
-            await listFiles();
+    function test() {
+        var fileContent = 'sample text'; // As a sample, upload a text file.
+        var file = new Blob([fileContent], {type: 'text/plain'});
+        var metadata = {
+            'name': 'sampleName', // Filename at Google Drive
+            'mimeType': 'text/plain', // mimeType at Google Drive
+            'parents': ['11yPxmclxzP4NK2DoY4a64VQaFB4NjPAJ'], // Folder ID at Google Drive
         };
 
-        if (gapi.client.getToken() === null) {
-            // Prompt the user to select a Google Account and ask for consent to share their data
-            // when establishing a new session.
-            tokenClient.requestAccessToken({prompt: 'consent'});
-        } else {
-            // Skip display of account chooser and consent dialog for an existing session.
-            tokenClient.requestAccessToken({prompt: ''});
-        }
+        var accessToken = gapi.auth.getToken().access_token; // Here gapi is used for retrieving the access token.
+        var form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+        form.append('file', file);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+            console.log(xhr.response.id); // Retrieve uploaded file ID.
+        };
+        xhr.send(form);
     }
-    
-    function handleSignoutClick() {
-        const token = gapi.client.getToken();
-        if (token !== null) {
-            google.accounts.oauth2.revoke(token.access_token);
-            gapi.client.setToken('');
-            document.getElementById('content').innerText = '';
-            document.getElementById('authorize_button').innerText = 'Authorize';
-            document.getElementById('signout_button').style.visibility = 'hidden';
-        }
-    }
-    */
-    
 </script>
 <style>
     body{
@@ -249,9 +187,6 @@
         <label for="upload">写真を撮影してアップロードする</label>
         <input id="upload" type="file" name="image" accept="image/*" capture="camera"/>
     </div>
-
-    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
     -->
 
     <!-- video(visible) -->
