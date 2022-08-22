@@ -123,7 +123,7 @@
 
         requestAnimationFrame( _canvasUpdate ); 
         num = num + 1;
-    };
+    }
 
     function isMobile(){
         var b = false;
@@ -131,7 +131,7 @@
         if( ( ua.indexOf('iPhone') > 0 || ua.indexOf('Android') > 0 ) && ua.indexOf( 'Mobile' ) > 0 ){
             b = true;
         }
-
+        beep()
         return b;
     }
     
